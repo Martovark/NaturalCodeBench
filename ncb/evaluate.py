@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from test_setup import write_test_files, extract_codes
 from execution import execution
-from utils import load_json, load_jsonl, save_json, save_jsonl, del_file
+from utils import load_json, load_jsonl, load_and_flatten_jsonl, save_json, save_jsonl, del_file, change_match
 
 
 def evaluate_code(data_dir, language, natural_lang, ckpt_name, ks, num_workers=64):
@@ -12,7 +12,7 @@ def evaluate_code(data_dir, language, natural_lang, ckpt_name, ks, num_workers=6
     os.makedirs(data_dir, exist_ok=True)
     del_file(data_dir / f'{ckpt_name}')
 
-    data = load_jsonl(file)
+    data = load_and_flatten_jsonl(file)
     dataset_size = len(data)
     testcases = load_jsonl(f'data/{language}_{natural_lang}/ncb_{language}_{natural_lang}.jsonl')
 
@@ -26,6 +26,8 @@ def evaluate_code(data_dir, language, natural_lang, ckpt_name, ks, num_workers=6
     print("Start evaluation")
     result = execution(data_dir / test_dir, ckpt_name, language, natural_lang, dataset_size, ks, num_workers)
     print(result, '\n')
+    # path to errors /data/temp/java_en_test | python_en_test/cpkt_name/error_problems.jsonl
+    change_match(file, language, natural_lang, ckpt_name)
     save_json(result, data_dir / test_dir / 'result.json')
 
 
