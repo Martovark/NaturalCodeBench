@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 from copy import deepcopy
@@ -93,6 +94,7 @@ def estimate_pass_at_k(
     return np.array([estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)])
 
 def change_match(file_p, language, natural_lang, ckpt_name):
+    # change flags in field matched
     errors_p = f"data/temp/{language}_{natural_lang}_test/{ckpt_name}/error_problems.jsonl"
     response, errors  = load_jsonl(file_p), load_jsonl(errors_p)
     
@@ -107,6 +109,18 @@ def change_match(file_p, language, natural_lang, ckpt_name):
             if idx in errors_dct[row["id"]]:
                 row["matched"][idx] = False
     
-    print("change match") 
     save_jsonl(response, file_p)
-        
+    
+    # change accuracy in all_metrics.json
+    result = load_json(f"results/{ckpt_name}/result.json")
+    all_metrics = load_jsonl(f"result/{ckpt_name}/all_metrics.jsonl")
+    
+    updated_accuracy = result["result"]["pass@k"]["pass@1"]
+    for metric in all_metrics:
+        if language == "java" and re.search("java", metric["dataset"], flags=re.I) is not None:
+            metric["metric"]["accuracy@1"] = updated_accuracy
+    
+        if language == "python" and re.search("py", metric["dataset"], flags=re.I) is not None:
+            metric["metric"]["accuracy@1"] = updated_accuracy
+            
+    save_jsonl(all_metrics, f"result/{ckpt_name}/all_metrics.jsonl")
