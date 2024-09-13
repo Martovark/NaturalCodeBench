@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from test_setup import write_test_files, extract_codes
 from execution import execution
-from utils import load_json, load_jsonl, load_and_flatten_jsonl, save_json, save_jsonl, del_file, change_match
+from utils import load_json, load_jsonl, load_and_flatten_jsonl, save_json, save_jsonl, del_file, change_match, change_acc
 
 
 def evaluate_code(data_dir, language, natural_lang, ckpt_name, ks, num_workers=64):
@@ -47,5 +47,6 @@ if __name__ == '__main__':
             evaluate_code(data_dir, lang, nat_lang, args.ckpt_name, args.ks, args.num_workers)
             results.append(load_json(data_dir / f'{args.ckpt_name}/result.json'))
     save_jsonl(results, f'results/{args.ckpt_name}/results.jsonl')
-    for res in results:
-        print(res)
+    change_acc(args.ckpt_name, args.languages[0])
+    # for res in results:
+    #     print(res)

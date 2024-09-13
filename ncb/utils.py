@@ -111,6 +111,8 @@ def change_match(file_p, language, natural_lang, ckpt_name):
     
     save_jsonl(response, file_p)
     
+
+def change_acc(ckpt_name, language):
     # change accuracy in all_metrics.json
     result = load_jsonl(f"results/{ckpt_name}/results.jsonl")[0] # [0] because one set evaluated in run
     all_metrics = load_jsonl(f"result/{ckpt_name}/all_metrics.jsonl")
