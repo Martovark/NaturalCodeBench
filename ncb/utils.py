@@ -115,7 +115,7 @@ def change_match(file_p, language, natural_lang, ckpt_name):
 def change_acc(ckpt_name, language):
     # change accuracy in all_metrics.json
     result = load_jsonl(f"results/{ckpt_name}/results.jsonl")[0] # [0] because one set evaluated in run
-    all_metrics = load_jsonl(f"result/{ckpt_name}/all_metrics.jsonl")
+    all_metrics = load_jsonl(f"results/{ckpt_name}/all_metrics.jsonl")
     
     updated_accuracy = result["result"]["pass@k"]["pass@1"]
     for metric in all_metrics:
@@ -125,4 +125,4 @@ def change_acc(ckpt_name, language):
         if language == "python" and re.search("py", metric["dataset"], flags=re.I) is not None:
             metric["metric"]["accuracy@1"] = updated_accuracy
             
-    save_jsonl(all_metrics, f"result/{ckpt_name}/all_metrics.jsonl")
+    save_jsonl(all_metrics, f"results/{ckpt_name}/all_metrics.jsonl")
