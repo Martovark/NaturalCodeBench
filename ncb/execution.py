@@ -77,8 +77,12 @@ def execution(base_dir, ckpt, language, natural_lang, dataset_size, ks, num_work
             except Exception as e:
                 _id = str(_dir)[str(_dir).find('_') + 1:str(_dir).rfind('_')]
                 results[_id].append({'0': 1, '0_30': 0, '30_60': 0, '60_100': 0, '100': 0})
-                print(f"Error occur in {_dir}, error: {e}")
-
+                
+                # append to error_problems.jsonl for correct flags
+                if debug:
+                    print(f"Error occur in {_dir}, error: {e}")
+                error_problems.append({'problem': _dir, 'error': 'Other errors'})
+                
         total, correct = [], []
         for result in results.values():
             passed = [r['100'] for r in result]
