@@ -10,11 +10,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from utils import load_jsonl, save_jsonl, load_json, save_json, estimate_pass_at_k
 from exec_java import eval_test
 
+TIMEOUT = 60
+
 
 def run_python_test(base_dir, test_dir):
     with open(Path(base_dir, test_dir, 'log.txt'), 'wb') as fp:
         subprocess.run(['python', 'ncb/exec_python.py', '--base_dir', base_dir, '--test_dir', test_dir],
-                       stdout=fp, stderr=fp, timeout=10)
+                       stdout=fp, stderr=fp, timeout=TIMEOUT)
 
 
 def execution(base_dir, ckpt, language, natural_lang, dataset_size, ks, num_workers=16, debug=False):
@@ -118,7 +120,7 @@ def execution(base_dir, ckpt, language, natural_lang, dataset_size, ks, num_work
                 test_dir = base_dir / 'java_test'
                 os.makedirs(solution_dir, exist_ok=True)
                 os.makedirs(test_dir, exist_ok=True)
-                futures.append(executor.submit(eval_test, _dir, base_dir, JUnit_path, 10))
+                futures.append(executor.submit(eval_test, _dir, base_dir, JUnit_path, TIMEOUT))
 
             for future in tqdm(as_completed(futures), total=len(futures)):
                 reports.append(future.result())
