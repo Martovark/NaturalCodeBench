@@ -31,6 +31,7 @@ def save_json(obj, path):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(obj, f, ensure_ascii=False, indent=2)
 
+
 def load_jsonl(path, hook=None):
     res = []
     with open(path, encoding='utf-8') as f:
@@ -108,6 +109,8 @@ def change_match(file_p, language, natural_lang, ckpt_name):
         for idx, _ in enumerate(row["matched"]):
             if idx in errors_dct[row["id"]]:
                 row["matched"][idx] = False
+        if len(row["matched"]) == 1:
+            row["matched"] = row["matched"][0]
     
     save_jsonl(response, file_p)
     
@@ -119,10 +122,10 @@ def change_acc(ckpt_name, language):
     
     updated_accuracy = result["result"]["pass@k"]["pass@1"]
     for metric in all_metrics:
-        if language == "java" and re.search("java", metric["dataset"], flags=re.I) is not None:
-            metric["metric"]["accuracy@1"] = updated_accuracy
+        if language == "java" and re.search("_JAVA_", metric["dataset"]) is not None:
+            metric["metric"]["accuracy"] = updated_accuracy
     
-        if language == "python" and re.search("py", metric["dataset"], flags=re.I) is not None:
-            metric["metric"]["accuracy@1"] = updated_accuracy
+        if language == "python" and re.search("_PYTHON_", metric["dataset"]) is not None:
+            metric["metric"]["accuracy"] = updated_accuracy
             
     save_jsonl(all_metrics, f"results/{ckpt_name}/all_metrics.jsonl")
