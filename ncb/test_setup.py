@@ -7,139 +7,146 @@ from utils import save_json
 
 
 def extract_python_code(response):
-    tag_pattern = fr"\[Python\](.*?)\[/Python\]"
-    tag_pattern1 = fr"\[Python\](.*?)```"
-    tag_pattern2 = fr"\[Python\](.*?)"
-    py_pattern1 = fr"```python[\n\r](.*?)[\n\r]```"
-    py_pattern2 = fr"```[\n\r](.*?)[\n\r]```"
-    py_pattern3 = fr"def\s(.*)"
-    py_pattern4 = fr"class\s(.*)"
-    py_pattern5 = fr"import\s(.*)"
-    py_pattern6 = fr"from\s(.*)"
+    tag_pattern = rf"\[Python\](.*?)\[/Python\]"
+    tag_pattern1 = rf"\[Python\](.*?)```"
+    tag_pattern2 = rf"\[Python\](.*?)"
+    py_pattern1 = rf"```python[\n\r](.*?)[\n\r]```"
+    py_pattern2 = rf"```[\n\r](.*?)[\n\r]```"
+    py_pattern3 = rf"def\s(.*)"
+    py_pattern4 = rf"class\s(.*)"
+    py_pattern5 = rf"import\s(.*)"
+    py_pattern6 = rf"from\s(.*)"
 
     try:
         judge = re.search(tag_pattern, response, re.DOTALL)
-        if judge and '```' not in judge.group(1):
+        if judge and "```" not in judge.group(1):
             code = judge.group(1)
-        elif not judge and '[Python]' in response and '```python' not in response:
-            if '```' in response[response.find('[Python]'):]:
+        elif not judge and "[Python]" in response and "```python" not in response:
+            if "```" in response[response.find("[Python]") :]:
                 code = re.search(tag_pattern1, response, re.DOTALL).group(1)
             else:
                 code = re.search(tag_pattern2, response, re.DOTALL).group(1)
-        elif '```python' in response:
+        elif "```python" in response:
             code = re.search(py_pattern1, response, re.DOTALL).group(1)
-        elif '```' in response:
+        elif "```" in response:
             code = re.search(py_pattern2, response, re.DOTALL).group(1)
-        elif 'from ' in response and 'import ' in response:
-            if response.find('from') < response.find('import'):
+        elif "from " in response and "import " in response:
+            if response.find("from") < response.find("import"):
                 code = re.search(py_pattern6, response, re.DOTALL).group()
             else:
                 code = re.search(py_pattern5, response, re.DOTALL).group()
-        elif 'import ' in response:
+        elif "import " in response:
             code = re.search(py_pattern5, response, re.DOTALL).group()
-        elif 'from ' in response:
+        elif "from " in response:
             code = re.search(py_pattern6, response, re.DOTALL).group()
-        elif 'class ' in response:
+        elif "class " in response:
             code = re.search(py_pattern4, response, re.DOTALL).group()
-        elif 'def ' in response:
+        elif "def " in response:
             code = re.search(py_pattern3, response, re.DOTALL).group()
         else:
-            code = 'NaN'
+            code = "NaN"
     except Exception as e:
-        code = 'NaN'
-    code = 'import pytest\n' + code
+        code = "NaN"
+    code = "import pytest\n" + code
     return code
 
 
 def extract_java_code(response):
-    tag_pattern = fr"\[Java\](.*?)\[/Java\]"
-    java_pattern1 = fr"```java[\n\r](.*?)[\n\r]```"
-    java_pattern2 = fr"public\s(.*)}}"
-    java_pattern3 = fr"```Java(.*?)```"
-    java_pattern4 = fr"```[\n\r](.*?)[\n\r]```"
-    java_pattern5 = fr"import\s(.*)}}"
-    java_pattern6 = fr"class\s(.*)}}"
-    java_pattern7 = fr"interface\s(.*)}}"
+    tag_pattern = rf"\[Java\](.*?)\[/Java\]"
+    java_pattern1 = rf"```java[\n\r](.*?)[\n\r]```"
+    java_pattern2 = rf"public\s(.*)}}"
+    java_pattern3 = rf"```Java(.*?)```"
+    java_pattern4 = rf"```[\n\r](.*?)[\n\r]```"
+    java_pattern5 = rf"import\s(.*)}}"
+    java_pattern6 = rf"class\s(.*)}}"
+    java_pattern7 = rf"interface\s(.*)}}"
 
     try:
-        if '[Java]' in response:
+        if "[Java]" in response:
             code = [re.search(tag_pattern, response, re.DOTALL).group(1)]
-        elif '```java' in response or '```Java' in response or '```' in response:
+        elif "```java" in response or "```Java" in response or "```" in response:
             code = re.findall(java_pattern1, response, re.DOTALL)
             for c in code:
-                response = response.replace("```java"+c+"```", "")
+                response = response.replace("```java" + c + "```", "")
             code += re.findall(java_pattern3, response, re.DOTALL)
             for c in code:
-                response = response.replace("```Java"+c+"```", "")
+                response = response.replace("```Java" + c + "```", "")
             code += re.findall(java_pattern4, response, re.DOTALL)
-        elif 'import ' in response:
+        elif "import " in response:
             code = [re.search(java_pattern5, response, re.DOTALL).group()]
-        elif 'public ' in response or 'interface ' in response or 'class ' in response:
-            public_ind = response.find('public ')
-            interface_ind = response.find('interface ')
-            class_ind = response.find('class ')
-            if public_ind != -1 and \
-                    (public_ind < interface_ind or interface_ind == -1) and \
-                    (public_ind < class_ind or class_ind == -1):
+        elif "public " in response or "interface " in response or "class " in response:
+            public_ind = response.find("public ")
+            interface_ind = response.find("interface ")
+            class_ind = response.find("class ")
+            if (
+                public_ind != -1
+                and (public_ind < interface_ind or interface_ind == -1)
+                and (public_ind < class_ind or class_ind == -1)
+            ):
                 code = [re.search(java_pattern2, response, re.DOTALL).group()]
-            elif interface_ind != -1 and \
-                    (interface_ind < public_ind or public_ind == -1) and \
-                    (interface_ind < class_ind or class_ind == -1):
+            elif (
+                interface_ind != -1
+                and (interface_ind < public_ind or public_ind == -1)
+                and (interface_ind < class_ind or class_ind == -1)
+            ):
                 code = [re.search(java_pattern7, response, re.DOTALL).group()]
-            elif class_ind != -1 and \
-                    (class_ind < public_ind or public_ind) and \
-                    (class_ind < interface_ind or interface_ind == -1):
+            elif (
+                class_ind != -1
+                and (class_ind < public_ind or public_ind)
+                and (class_ind < interface_ind or interface_ind == -1)
+            ):
                 code = [re.search(java_pattern6, response, re.DOTALL).group()]
             else:
                 code = "NaN"
                 print(response)
         else:
-            code = ['NaN']
+            code = ["NaN"]
     except Exception as e:
-        code = ['NaN']
+        code = ["NaN"]
     return code
 
 
 def extract_codes(data, testcases, language):
     for item in data:
         for ex in testcases:
-            if item['_id'] == ex['_id']:
-                item['testcases'] = ex['testcases']
-                item['setup_code'] = ex['setup_code']
+            if item["_id"] == ex["_id"]:
+                item["testcases"] = ex["testcases"]
+                item["setup_code"] = ex["setup_code"]
                 break
 
-        if 'code' not in item.keys():
-            if language == 'java':
-                item['code'] = extract_java_code(item['response'])
-            elif language == 'python':
-                item['code'] = extract_python_code(item['response'])
+        if "code" not in item.keys():
+            if language == "java":
+                item["code"] = extract_java_code(item["response"])
+            elif language == "python":
+                item["code"] = extract_python_code(item["response"])
     return data
 
 
 def write_python_test_files(data, data_dir, input_files_path, ckpt):
     ids = {}
     for item in data:
-        _id = str(item['_id'])
-        if not item['response'] or item['code'] == 'NaN':
+        _id = str(item["_id"])
+        if not item["response"] or item["code"] == "NaN":
             print(f"No extracted code: python_{item['_id']}")
             continue
-        file_name = f'python_{_id}'
+        file_name = f"python_{_id}"
         if _id in ids:
             ids[_id] += 1
-            id_name = _id + '_' + str(ids[_id])
+            id_name = _id + "_" + str(ids[_id])
         else:
             ids[_id] = 0
-            id_name = _id + '_' + str(ids[_id])
-        
+            id_name = _id + "_" + str(ids[_id])
 
-        test_dir = data_dir / ckpt / f'python_{id_name}'
+        test_dir = data_dir / ckpt / f"python_{id_name}"
         os.makedirs(test_dir, exist_ok=True)
 
-        save_json(item, test_dir / f'{file_name}.json')
+        save_json(item, test_dir / f"{file_name}.json")
 
-        with open(test_dir / f'{file_name}.py', 'w', encoding='utf-8') as f:
-            f.write("import pytest\nimport sys\nwith open('stdin.txt', 'w') as f:\n    for i in range(1000):\n        f.write(\"1\\n\")\nsys.stdin = open(\"stdin.txt\")\n")
-            f.write(item['code'] + '\n')
+        with open(test_dir / f"{file_name}.py", "w", encoding="utf-8") as f:
+            f.write(
+                "import pytest\nimport sys\nwith open('stdin.txt', 'w') as f:\n    for i in range(10):\n        f.write(\"1\\n\")\nsys.stdin = open(\"stdin.txt\")\n"
+            )
+            f.write(item["code"] + "\n")
 
         files_for_prob_dir = input_files_path / str(_id)
         if os.path.exists(files_for_prob_dir):
@@ -150,9 +157,9 @@ def write_python_test_files(data, data_dir, input_files_path, ckpt):
                 elif os.path.isdir(file_for_prob):
                     shutil.copytree(file_for_prob, test_dir / str(file))
 
-        with open(test_dir / f'test_{file_name}.py', 'w', encoding='utf-8') as f:
+        with open(test_dir / f"test_{file_name}.py", "w", encoding="utf-8") as f:
             f.write(f"import pytest\nfrom {file_name} import *\n")
-            f.write(item['testcases'] + '\n' + item['setup_code'])
+            f.write(item["testcases"] + "\n" + item["setup_code"])
 
 
 def write_java_test_files(data, data_dir, input_files_path, ckpt):
@@ -194,25 +201,25 @@ def write_java_test_files(data, data_dir, input_files_path, ckpt):
     }"""
     ids = {}
     for index, item in tqdm(enumerate(data)):
-        _id = str(item['_id'])
-        if not item['response'] or item['code'] == 'NaN':
+        _id = str(item["_id"])
+        if not item["response"] or item["code"] == "NaN":
             print(f"no code: java_{item['_id']}")
             continue
         if _id in ids:
             ids[_id] += 1
-            id_name = _id + '_' + str(ids[_id])
+            id_name = _id + "_" + str(ids[_id])
         else:
             ids[_id] = 0
-            id_name = _id + '_' + str(ids[_id])
+            id_name = _id + "_" + str(ids[_id])
         test_dir = data_dir / ckpt / f"java_{id_name}"
         os.makedirs(test_dir, exist_ok=True)
 
-        save_json(item, test_dir / f'java_{_id}.json')
+        save_json(item, test_dir / f"java_{_id}.json")
 
         file_c = 0
-        for c in item['code']:
-            c = '\n' + c
-            import_pattern = r'(\n|^)(import .*?)\n'
+        for c in item["code"]:
+            c = "\n" + c
+            import_pattern = r"(\n|^)(import .*?)\n"
             interface_pattern = r"((@.*?)?(\n[^\n]*)?interface .*?[;}]\s*\n+})"
             class_pattern = r"((@.*?)?(\n[^\n]*)?class .*?[;}]\s*\n+})"
             enum_pattern = r"((@.*?)?(\n[^\n]*)?enum .*?[;}]?\s*\n+})"
@@ -225,32 +232,38 @@ def write_java_test_files(data, data_dir, input_files_path, ckpt):
 
             for it in interfaces:
                 it = it[0]
-                interface_name_pattern = r'interface (.*?)\s'
+                interface_name_pattern = r"interface (.*?)\s"
                 name = re.search(interface_name_pattern, it, re.DOTALL).group(1)
-                with open(test_dir / f'{name}.java', 'w', encoding='utf-8') as f:
-                    f.write("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n")
+                with open(test_dir / f"{name}.java", "w", encoding="utf-8") as f:
+                    f.write(
+                        "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n"
+                    )
                     f.write("\n".join(imports) + "\n")
-                    f.write(it+'\n')
+                    f.write(it + "\n")
                 file_c += 1
 
             for cls in classes:
                 cls = cls[0]
-                class_name_pattern = r'class (.*?)\s'
+                class_name_pattern = r"class (.*?)\s"
                 name = re.search(class_name_pattern, cls, re.DOTALL).group(1)
-                with open(test_dir / f'{name}.java', 'w', encoding='utf-8') as f:
-                    f.write("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n")
+                with open(test_dir / f"{name}.java", "w", encoding="utf-8") as f:
+                    f.write(
+                        "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n"
+                    )
                     f.write("\n".join(imports) + "\n")
-                    f.write(cls+'\n')
+                    f.write(cls + "\n")
                 file_c += 1
 
             for enum in enums:
                 enum = enum[0]
-                enum_name_pattern = r'enum (.*?)\s'
+                enum_name_pattern = r"enum (.*?)\s"
                 name = re.search(enum_name_pattern, enum, re.DOTALL).group(1)
-                with open(test_dir / f'{name}.java', 'w', encoding='utf-8') as f:
-                    f.write("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n")
+                with open(test_dir / f"{name}.java", "w", encoding="utf-8") as f:
+                    f.write(
+                        "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n"
+                    )
                     f.write("\n".join(imports) + "\n")
-                    f.write(enum + '\n')
+                    f.write(enum + "\n")
                 file_c += 1
 
         files_for_prob_dir = input_files_path / str(_id)
@@ -262,23 +275,23 @@ def write_java_test_files(data, data_dir, input_files_path, ckpt):
                 elif os.path.isdir(file_for_prob):
                     shutil.copytree(file_for_prob, test_dir / str(file))
 
-        testcases = item['testcases']
-        test_file_name = test_dir / f'Test_java_{_id}.java'
-        test_file_name_pattern = fr"class (.*?)\s"
+        testcases = item["testcases"]
+        test_file_name = test_dir / f"Test_java_{_id}.java"
+        test_file_name_pattern = rf"class (.*?)\s"
         match4 = re.search(test_file_name_pattern, testcases, re.DOTALL)
-        with open(test_file_name, 'w', encoding='utf-8') as f:
-            tmp = testcases.replace(match4.group(1), f'Test_java_{_id}')
+        with open(test_file_name, "w", encoding="utf-8") as f:
+            tmp = testcases.replace(match4.group(1), f"Test_java_{_id}")
             f.write(tmp)
-        testrunner_file = test_dir / 'TestRunner.java'
-        tr_code = Testrunner.replace('YourTestClass', f'Test_java_{_id}')
-        with open(testrunner_file, 'w') as f:
+        testrunner_file = test_dir / "TestRunner.java"
+        tr_code = Testrunner.replace("YourTestClass", f"Test_java_{_id}")
+        with open(testrunner_file, "w") as f:
             f.write(tr_code)
 
 
 def write_test_files(data_dir, input_files_path, data, language, ckpt):
     os.makedirs(data_dir / ckpt, exist_ok=True)
-    if language == 'python':
+    if language == "python":
         write_python_test_files(data, data_dir, input_files_path, ckpt)
-    elif language == 'java':
+    elif language == "java":
         write_java_test_files(data, data_dir, input_files_path, ckpt)
     return ckpt
