@@ -108,13 +108,14 @@ def change_match(file_p, language, natural_lang, ckpt_name):
         errors_dct[int(_id)].append(int(response_num))
 
     for row in response:
-        row["matched"] = [True] * len(row["matched"])
-        for idx, _ in enumerate(row["matched"]):
-            if idx in errors_dct[row["id"]]:
-                row["matched"][idx] = False
-        if len(row["matched"]) == 1:
-            row["matched"] = row["matched"][0]
-
+        if isinstance(row["matched"], list):
+            row["matched"] = [True] * len(row["matched"])
+            for idx, _ in enumerate(row["matched"]):
+                if idx in errors_dct[row["id"]]:
+                    row["matched"][idx] = False
+        else:
+            if not errors_dct[row["id"]]:
+                row["matched"] = True
     save_jsonl(response, file_p)
 
 
