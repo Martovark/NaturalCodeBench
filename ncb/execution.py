@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from utils import load_jsonl, save_jsonl, load_json, save_json, estimate_pass_at_k
 from exec_java import eval_test
 
-TIMEOUT = 6
+TIMEOUT = 30
 
 
 def run_python_test(base_dir, test_dir):
