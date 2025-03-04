@@ -144,7 +144,7 @@ def write_python_test_files(data, data_dir, input_files_path, ckpt):
 
         with open(test_dir / f"{file_name}.py", "w", encoding="utf-8") as f:
             f.write(
-                "import pytest\nimport sys\nwith open('stdin.txt', 'w') as f:\n    for i in range(10):\n        f.write(\"1\\n\")\nsys.stdin = open(\"stdin.txt\")\n"
+                "import pytest\nimport sys\nwith open('stdin.txt', 'w') as f:\n    for i in range(1000):\n        f.write(\"1\\n\")\nsys.stdin = open(\"stdin.txt\")\n"
             )
             f.write(item["code"] + "\n")
 
